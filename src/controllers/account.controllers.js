@@ -1,78 +1,70 @@
-const mongoose = require("mongoose")
-const ledgerModel = require("./ledger.model")
+const accountModel = require("../models/account.model")
 
-const accountSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "user",
-        required: [ true, "Account must be associated with a user" ],
-        index: true
-    },
-    status: {
-        type: String,
-        enum: {
-            values: [ "ACTIVE", "FROZEN", "CLOSED" ],
-            message: "Status can be either ACTIVE, FROZEN or CLOSED",
-        },
-        default: "ACTIVE"
-    },
-    currency: {
-        type: String,
-        required: [ true, "Currency is required for creating an account" ],
-        default: "INR"
+async function createAccountController(req, res) {
+    try {
+        const { currency = "INR" } = req.body
+
+        const account = await accountModel.create({
+            user: req.user._id,
+            currency,
+            status: "ACTIVE"
+        })
+
+        return res.status(201).json({
+            message: "Account created successfully",
+            account
+        })
+    } catch (error) {
+        return res.status(400).json({
+            message: error.message || "Could not create account"
+        })
     }
-}, {
-    timestamps: true
-})
-
-accountSchema.index({ user: 1, status: 1 })
-
-accountSchema.methods.getBalance = async function () {
-
-    const balanceData = await ledgerModel.aggregate([
-        { $match: { account: this._id } },
-        {
-            $group: {
-                _id: null,
-                totalDebit: {
-                    $sum: {
-                        $cond: [
-                            { $eq: [ "$type", "DEBIT" ] },
-                            "$amount",
-                            0
-                        ]
-                    }
-                },
-                totalCredit: {
-                    $sum: {
-                        $cond: [
-                            { $eq: [ "$type", "CREDIT" ] },
-                            "$amount",
-                            0
-                        ]
-                    }
-                }
-            }
-        },
-        {
-            $project: {
-                _id: 0,
-                balance: { $subtract: [ "$totalCredit", "$totalDebit" ] }
-            }
-        }
-    ])
-
-    if (balanceData.length === 0) {
-        return 0
-    }
-
-    return balanceData[ 0 ].balance
-
 }
 
+async function getUserAccountsController(req, res) {
+    try {
+        const accounts = await accountModel.find({ user: req.user._id })
 
-const accountModel = mongoose.model("account", accountSchema)
+        return res.status(200).json({
+            accounts
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: "Unable to fetch user accounts"
+        })
+    }
+}
 
+async function getAccountBalanceController(req, res) {
+    try {
+        const { accountId } = req.params
 
+        const account = await accountModel.findOne({
+            _id: accountId,
+            user: req.user._id
+        })
 
-module.exports = accountModel
+        if (!account) {
+            return res.status(404).json({
+                message: "Account not found"
+            })
+        }
+
+        const balance = await account.getBalance()
+
+        return res.status(200).json({
+            accountId: account._id,
+            balance
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: "Unable to fetch account balance"
+        })
+    }
+}
+
+module.exports = {
+    createAccountController,
+    getUserAccountsController,
+    getAccountBalanceController
+}
