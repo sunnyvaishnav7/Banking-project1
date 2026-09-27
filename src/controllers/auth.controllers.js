@@ -10,35 +10,55 @@ const tokenBlackListModel = require("../models/blackList.model")
 async function userRegisterController(req, res) {
     const { email, password, name } = req.body
 
-    const isExists = await userModel.findOne({
-        email: email
-    })
-
-    if (isExists) {
-        return res.status(422).json({
-            message: "User already exists with email.",
-            status: "failed"
+    if (!email || !password || !name) {
+        return res.status(400).json({
+            message: "name, email and password are required"
         })
     }
 
-    const user = await userModel.create({
-        email, password, name
-    })
+    try {
+        const isExists = await userModel.findOne({
+            email: email
+        })
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" })
+        if (isExists) {
+            return res.status(422).json({
+                message: "User already exists with email.",
+                status: "failed"
+            })
+        }
 
-    res.cookie("token", token)
+        const user = await userModel.create({
+            email,
+            password,
+            name
+        })
 
-    res.status(201).json({
-        user: {
-            _id: user._id,
-            email: user.email,
-            name: user.name
-        },
-        token
-    })
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" })
 
-    await emailService.sendRegistrationEmail(user.email, user.name)
+        res.cookie("token", token)
+
+        res.status(201).json({
+            user: {
+                _id: user._id,
+                email: user.email,
+                name: user.name
+            },
+            token
+        })
+
+        await emailService.sendRegistrationEmail(user.email, user.name)
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(409).json({
+                message: "Duplicate record found. Please use a different email. If this is an old database index issue, remove the stale username index from MongoDB."
+            })
+        }
+
+        return res.status(400).json({
+            message: error.message || "Registration failed"
+        })
+    }
 }
 
 /**
@@ -86,7 +106,7 @@ async function userLoginController(req, res) {
  * - POST /api/auth/logout
   */
 async function userLogoutController(req, res) {
-    const token = req.cookies.token || req.headers.authorization?.split(" ")[ 1 ]
+    const token = req.cookies.token || req.headers.authorization?.split(" ")[1]
 
     if (!token) {
         return res.status(200).json({
