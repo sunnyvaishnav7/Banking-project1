@@ -233,7 +233,7 @@ function App() {
           </a>
           <div className="auth-message">
             <span className="eyebrow eyebrow-light">BANKING, MADE CLEAR</span>
-            <h1>Your money.<br />All in one place.</h1>
+            <h1>Your money<br />All in one place.</h1>
             <p>A quieter way to keep track of your accounts and move money when you need to.</p>
           </div>
           <div className="auth-panel-footer"><ShieldCheck size={17} /> Secure access to your account</div>
