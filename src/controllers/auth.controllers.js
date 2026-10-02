@@ -3,6 +3,25 @@ const jwt = require("jsonwebtoken")
 const emailService = require("../services/email.service")
 const tokenBlackListModel = require("../models/blackList.model")
 
+const authCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 3 * 24 * 60 * 60 * 1000
+}
+
+function setAuthCookie(res, token) {
+    res.cookie("token", token, authCookieOptions)
+}
+
+function getPublicUser(user) {
+    return {
+        _id: user._id,
+        email: user.email,
+        name: user.name
+    }
+}
+
 /**
 * - user register controller
 * - POST /api/auth/register
@@ -10,16 +29,16 @@ const tokenBlackListModel = require("../models/blackList.model")
 async function userRegisterController(req, res) {
     const { email, password, name } = req.body
 
-    if (!email || !password || !name) {
+    if (typeof email !== "string" || typeof password !== "string" || typeof name !== "string" || !email.trim() || !password || !name.trim()) {
         return res.status(400).json({
             message: "name, email and password are required"
         })
     }
 
     try {
-        const isExists = await userModel.findOne({
-            email: email
-        })
+        const normalizedEmail = email.trim().toLowerCase()
+        const normalizedName = name.trim()
+        const isExists = await userModel.findOne({ email: normalizedEmail })
 
         if (isExists) {
             return res.status(422).json({
@@ -29,23 +48,16 @@ async function userRegisterController(req, res) {
         }
 
         const user = await userModel.create({
-            email,
+            email: normalizedEmail,
             password,
-            name
+            name: normalizedName
         })
 
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" })
 
-        res.cookie("token", token)
+        setAuthCookie(res, token)
 
-        res.status(201).json({
-            user: {
-                _id: user._id,
-                email: user.email,
-                name: user.name
-            },
-            token
-        })
+        res.status(201).json({ user: getPublicUser(user) })
 
         await emailService.sendRegistrationEmail(user.email, user.name)
     } catch (error) {
@@ -69,7 +81,11 @@ async function userRegisterController(req, res) {
 async function userLoginController(req, res) {
     const { email, password } = req.body
 
-    const user = await userModel.findOne({ email }).select("+password")
+    if (typeof email !== "string" || typeof password !== "string" || !email.trim() || !password) {
+        return res.status(400).json({ message: "Email and password are required" })
+    }
+
+    const user = await userModel.findOne({ email: email.trim().toLowerCase() }).select("+password")
 
     if (!user) {
         return res.status(401).json({
@@ -87,17 +103,14 @@ async function userLoginController(req, res) {
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" })
 
-    res.cookie("token", token)
+    setAuthCookie(res, token)
 
-    res.status(200).json({
-        user: {
-            _id: user._id,
-            email: user.email,
-            name: user.name
-        },
-        token
-    })
+    res.status(200).json({ user: getPublicUser(user) })
 
+}
+
+function userSessionController(req, res) {
+    return res.status(200).json({ user: getPublicUser(req.user) })
 }
 
 
@@ -106,7 +119,7 @@ async function userLoginController(req, res) {
  * - POST /api/auth/logout
   */
 async function userLogoutController(req, res) {
-    const token = req.cookies.token || req.headers.authorization?.split(" ")[1]
+    const token = req.authToken
 
     if (!token) {
         return res.status(200).json({
@@ -120,7 +133,11 @@ async function userLogoutController(req, res) {
         token: token
     })
 
-    res.clearCookie("token")
+    res.clearCookie("token", {
+        httpOnly: authCookieOptions.httpOnly,
+        secure: authCookieOptions.secure,
+        sameSite: authCookieOptions.sameSite
+    })
 
     res.status(200).json({
         message: "User logged out successfully"
@@ -132,5 +149,6 @@ async function userLogoutController(req, res) {
 module.exports = {
     userRegisterController,
     userLoginController,
-    userLogoutController
+    userLogoutController,
+    userSessionController
 }
