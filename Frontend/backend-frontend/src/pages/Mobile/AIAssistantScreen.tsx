@@ -12,6 +12,10 @@ import {
     TrendingUp,
     Paperclip
 } from 'lucide-react';
+import { apiClient } from '../../shared/lib/apiClient';
+import { useAppStore } from '../../shared/lib/useAppStore';
+import { generateIdempotencyKey } from '../../shared/lib/security';
+import confetti from 'canvas-confetti';
 import './MobileScreens.css';
 
 interface Message {
@@ -29,6 +33,7 @@ interface AIAssistantScreenProps {
 }
 
 const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({ initialPrompt, onExecuteTransfer }) => {
+    const { addToast } = useAppStore();
     const [messages, setMessages] = useState<Message[]>([
         {
             id: 'm1',
@@ -81,6 +86,7 @@ const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({ initialPrompt, on
                         recipient: 'Sam Richardson',
                         account: '•••• 4492',
                         amount: 150.00,
+                        amountCents: 15000,
                         fee: 0.00,
                         confirmed: false
                     }
@@ -132,23 +138,51 @@ const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({ initialPrompt, on
 
             setMessages((prev) => [...prev, assistantReply]);
             setIsTyping(false);
-        }, 600);
+        }, 500);
     };
 
-    const handleConfirmTransferInChat = (msgId: string) => {
-        setMessages((prev) =>
-            prev.map((m) => {
-                if (m.id === msgId && m.cardData) {
-                    return {
-                        ...m,
-                        cardData: { ...m.cardData, confirmed: true }
-                    };
-                }
-                return m;
-            })
-        );
-        if (onExecuteTransfer) {
-            onExecuteTransfer('Sam Richardson', 150);
+    const handleConfirmTransferInChat = async (msgId: string, amountCents: number) => {
+        try {
+            const idempotencyKey = generateIdempotencyKey();
+            const res = await apiClient.transfers.send({
+                fromAccountId: 'acc_checking_01',
+                toAccountOrPayeeId: 'payee_02',
+                amountCents: amountCents || 15000,
+                note: 'Apex AI In-Chat Transfer',
+                idempotencyKey,
+            });
+
+            setMessages((prev) =>
+                prev.map((m) => {
+                    if (m.id === msgId && m.cardData) {
+                        return {
+                            ...m,
+                            cardData: {
+                                ...m.cardData,
+                                confirmed: true,
+                                refNumber: res.transaction.refNumber,
+                            }
+                        };
+                    }
+                    return m;
+                })
+            );
+
+            try {
+                confetti({
+                    particleCount: 70,
+                    spread: 60,
+                    origin: { y: 0.6 }
+                });
+            } catch {}
+
+            addToast(`Transferred $${(amountCents / 100).toFixed(2)} to Sam Richardson`, 'success', 'Transfer Settled');
+
+            if (onExecuteTransfer) {
+                onExecuteTransfer('Sam Richardson', amountCents / 100);
+            }
+        } catch (err: any) {
+            addToast(err.message || 'Transfer failed', 'error');
         }
     };
 
@@ -215,7 +249,7 @@ const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({ initialPrompt, on
                                     {!msg.cardData.confirmed ? (
                                         <button
                                             className="btn-primary btn-sm mt-3 w-full"
-                                            onClick={() => handleConfirmTransferInChat(msg.id)}
+                                            onClick={() => handleConfirmTransferInChat(msg.id, msg.cardData.amountCents || 15000)}
                                         >
                                             <CheckCircle2 size={16} />
                                             <span>Confirm & Send ${msg.cardData.amount.toFixed(2)}</span>
@@ -223,7 +257,7 @@ const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({ initialPrompt, on
                                     ) : (
                                         <div className="chat-success-badge mt-3">
                                             <CheckCircle2 size={16} color="#16A34A" />
-                                            <span>Transferred successfully &bull; Ref #98102</span>
+                                            <span>Transferred successfully &bull; {msg.cardData.refNumber || '#APEX_TX_98125'}</span>
                                         </div>
                                     )}
                                 </div>

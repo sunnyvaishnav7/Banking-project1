@@ -5,8 +5,13 @@ import SidebarDrawer from '../components/Navigation/SidebarDrawer';
 import BottomNav from '../components/Navigation/BottomNav';
 import DesktopLayout from '../components/DesktopLayout/DesktopLayout';
 
+// Security & Toast Modals
+import { SessionExpiringModal, ToastContainer } from '../shared/ui/SecurityModals';
+import { useInactivityTimer } from '../shared/hooks/useInactivityTimer';
+import { useAppStore } from '../shared/lib/useAppStore';
+
 // Screens
-import OnboardingLoginScreen from '../pages/Mobile/OnboardingLoginScreen';
+import { AuthScreens } from '../features/auth/AuthScreens';
 import HomeDashboardScreen from '../pages/Mobile/HomeDashboardScreen';
 import DesktopDashboardScreen from '../pages/Desktop/DesktopDashboardScreen';
 import AIAssistantScreen from '../pages/Mobile/AIAssistantScreen';
@@ -16,69 +21,55 @@ import TransactionHistoryScreen from '../pages/Mobile/TransactionHistoryScreen';
 import ProfileSettingsScreen from '../pages/Mobile/ProfileSettingsScreen';
 import ComponentLibraryScreen from '../pages/Mobile/ComponentLibraryScreen';
 
-import { Smartphone, Monitor, Shield, Zap, Sparkles } from 'lucide-react';
+import { Smartphone, Monitor, Shield, Zap } from 'lucide-react';
 import './App.css';
 
 const App: React.FC = () => {
-    // Mode: 'auto' (automatically shifts based on screen width), 'desktop' (force), 'mobile' (force)
+    // Enable 3-minute inactivity timer & tab blur privacy mask
+    useInactivityTimer();
+
+    const { user, isAuthenticated, activeTab, setActiveTab, logout } = useAppStore();
+
+    // Responsive Mode: 'auto' (automatically shifts based on screen width), 'desktop' (force), 'mobile' (force)
     const [viewMode, setViewMode] = useState<'auto' | 'desktop' | 'mobile'>('auto');
     const [windowWidth, setWindowWidth] = useState<number>(() => typeof window !== 'undefined' ? window.innerWidth : 1200);
 
-    const [isLoggedIn, setIsLoggedIn] = useState(true);
-    const [userName, setUserName] = useState('Alexander Wright');
-    const [userEmail, setUserEmail] = useState('alex.wright@apexbank.io');
-    const [activeTab, setActiveTab] = useState<string>('home');
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [assistantPrompt, setAssistantPrompt] = useState<string>('');
 
-    // Automatic screen width listener for seamless responsive shifting
+    // Window resize listener
     useEffect(() => {
-        const handleResize = () => {
-            setWindowWidth(window.innerWidth);
-        };
+        const handleResize = () => setWindowWidth(window.innerWidth);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Determine active layout based on auto-detection or manual override
+    // Determine active layout (mobile if < 840px in auto mode)
     const isMobileLayout = viewMode === 'auto' ? windowWidth < 840 : viewMode === 'mobile';
-
-    const handleLoginSuccess = (name: string, email: string) => {
-        setUserName(name);
-        setUserEmail(email);
-        setIsLoggedIn(true);
-        setActiveTab('home');
-    };
-
-    const handleLogout = () => {
-        setIsLoggedIn(false);
-        setActiveTab('login');
-        setIsDrawerOpen(false);
-    };
 
     const handleSelectPrompt = (prompt: string) => {
         setAssistantPrompt(prompt);
         setActiveTab('assistant');
     };
 
-    const isLoginView = !isLoggedIn || activeTab === 'login';
+    const isLoginView = !isAuthenticated || activeTab === 'login';
 
     const renderScreenContent = (isDesktopView: boolean) => {
         if (isLoginView) {
-            return <OnboardingLoginScreen onLoginSuccess={handleLoginSuccess} />;
+            return <AuthScreens onSuccess={() => setActiveTab('home')} />;
         }
 
         switch (activeTab) {
             case 'home':
                 return isDesktopView ? (
                     <DesktopDashboardScreen
-                        userName={userName}
+                        userName={user?.name || 'Alexander Wright'}
                         onNavigateTab={setActiveTab}
                         onSelectSuggestion={handleSelectPrompt}
                     />
                 ) : (
                     <HomeDashboardScreen
-                        userName={userName}
+                        userName={user?.name || 'Alexander Wright'}
                         onNavigateTab={setActiveTab}
                         onSelectSuggestion={handleSelectPrompt}
                         onOpenSendMoney={() => setActiveTab('transfers')}
@@ -106,7 +97,7 @@ const App: React.FC = () => {
                 return <TransactionHistoryScreen />;
 
             case 'settings':
-                return <ProfileSettingsScreen onLogout={handleLogout} />;
+                return <ProfileSettingsScreen onLogout={logout} />;
 
             case 'components':
                 return <ComponentLibraryScreen />;
@@ -114,7 +105,7 @@ const App: React.FC = () => {
             default:
                 return (
                     <HomeDashboardScreen
-                        userName={userName}
+                        userName={user?.name || 'Alexander Wright'}
                         onNavigateTab={setActiveTab}
                         onSelectSuggestion={handleSelectPrompt}
                     />
@@ -140,7 +131,7 @@ const App: React.FC = () => {
                     </div>
                 </div>
 
-                {/* View Switcher: Auto Responsive vs Manual */}
+                {/* View Switcher: Auto Responsive vs Manual Override */}
                 <div className="view-mode-pill-toggle">
                     <button
                         className={`view-mode-btn ${viewMode === 'auto' ? 'active' : ''}`}
@@ -153,7 +144,7 @@ const App: React.FC = () => {
                     <button
                         className={`view-mode-btn ${viewMode === 'desktop' ? 'active' : ''}`}
                         onClick={() => setViewMode('desktop')}
-                        title="Force Desktop full-screen layout"
+                        title="Force Desktop layout"
                     >
                         <Monitor size={14} />
                         <span>Desktop</span>
@@ -161,7 +152,7 @@ const App: React.FC = () => {
                     <button
                         className={`view-mode-btn ${viewMode === 'mobile' ? 'active' : ''}`}
                         onClick={() => setViewMode('mobile')}
-                        title="Force Mobile 390x844 frame layout"
+                        title="Force Mobile (390×844) frame"
                     >
                         <Smartphone size={14} />
                         <span>Mobile (390×844)</span>
@@ -169,22 +160,22 @@ const App: React.FC = () => {
                 </div>
             </div>
 
-            {/* Render Desktop or Mobile according to automatic screen detection */}
+            {/* Layout Rendering */}
             {!isMobileLayout ? (
                 /* DESKTOP VIEW */
                 isLoginView ? (
                     <div className="desktop-login-wrapper">
                         <div className="card-clean" style={{ maxWidth: '440px', width: '100%', margin: '60px auto' }}>
-                            <OnboardingLoginScreen onLoginSuccess={handleLoginSuccess} />
+                            <AuthScreens onSuccess={() => setActiveTab('home')} />
                         </div>
                     </div>
                 ) : (
                     <DesktopLayout
                         activeTab={activeTab}
                         onSelectTab={setActiveTab}
-                        userName={userName}
-                        userEmail={userEmail}
-                        onLogout={handleLogout}
+                        userName={user?.name || 'Alexander Wright'}
+                        userEmail={user?.email || 'alex.wright@apexbank.io'}
+                        onLogout={logout}
                     >
                         {renderScreenContent(true)}
                     </DesktopLayout>
@@ -196,16 +187,11 @@ const App: React.FC = () => {
                     <MobileFrame
                         activeScreenId={activeTab}
                         onSelectScreen={(screenId) => {
-                            if (screenId === 'login') {
-                                setIsLoggedIn(false);
-                            } else {
-                                setIsLoggedIn(true);
-                            }
                             setActiveTab(screenId);
                         }}
                     >
                         {isLoginView ? (
-                            <OnboardingLoginScreen onLoginSuccess={handleLoginSuccess} />
+                            <AuthScreens onSuccess={() => setActiveTab('home')} />
                         ) : (
                             <div className="mobile-app-shell">
                                 <TopBar
@@ -230,9 +216,9 @@ const App: React.FC = () => {
                                         setActiveTab(tabId);
                                         setIsDrawerOpen(false);
                                     }}
-                                    userName={userName}
-                                    userEmail={userEmail}
-                                    onLogout={handleLogout}
+                                    userName={user?.name || 'Alexander Wright'}
+                                    userEmail={user?.email || 'alex.wright@apexbank.io'}
+                                    onLogout={logout}
                                 />
 
                                 <main className="mobile-main-body">
@@ -252,7 +238,7 @@ const App: React.FC = () => {
                     /* Full-Screen Native Mobile View when screen width < 840px */
                     <div className="native-mobile-container">
                         {isLoginView ? (
-                            <OnboardingLoginScreen onLoginSuccess={handleLoginSuccess} />
+                            <AuthScreens onSuccess={() => setActiveTab('home')} />
                         ) : (
                             <div className="mobile-app-shell">
                                 <TopBar
@@ -277,9 +263,9 @@ const App: React.FC = () => {
                                         setActiveTab(tabId);
                                         setIsDrawerOpen(false);
                                     }}
-                                    userName={userName}
-                                    userEmail={userEmail}
-                                    onLogout={handleLogout}
+                                    userName={user?.name || 'Alexander Wright'}
+                                    userEmail={user?.email || 'alex.wright@apexbank.io'}
+                                    onLogout={logout}
                                 />
 
                                 <main className="mobile-main-body">
@@ -297,6 +283,10 @@ const App: React.FC = () => {
                     </div>
                 )
             )}
+
+            {/* Global Security Modals */}
+            <SessionExpiringModal />
+            <ToastContainer />
         </div>
     );
 };
