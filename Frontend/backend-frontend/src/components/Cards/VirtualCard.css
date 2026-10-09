@@ -1,0 +1,255 @@
+.virtual-card-wrapper {
+  perspective: 1000px;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+.card-3d-inner {
+  position: relative;
+  width: 100%;
+  height: 230px;
+  border-radius: var(--radius-xl);
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6);
+}
+
+.card-3d-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-3d-inner.frozen {
+  filter: grayscale(0.85) brightness(0.8);
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-xl);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+/* Skins */
+.card-skin-black-obsidian {
+  background: var(--grad-card-obsidian);
+}
+
+.card-skin-emerald-platinum {
+  background: var(--grad-card-emerald);
+}
+
+.card-skin-titanium-gold {
+  background: var(--grad-card-titanium);
+}
+
+.card-skin-cyber-neon {
+  background: var(--grad-card-cyber);
+}
+
+/* Front Design */
+.card-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-brand-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fbbf24;
+}
+
+.gold-icon {
+  color: #fbbf24;
+}
+
+.card-network-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f8fafc;
+}
+
+.card-network-name {
+  font-weight: 800;
+  font-size: 1.1rem;
+  font-style: italic;
+  letter-spacing: -0.02em;
+}
+
+.card-chip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.smart-chip {
+  width: 44px;
+  height: 32px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  border: 1px solid #b45309;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 4px;
+}
+
+.chip-line {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.3);
+  width: 100%;
+}
+
+.frozen-badge {
+  background: rgba(244, 63, 94, 0.3);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.5);
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-number-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  padding: 6px 0;
+}
+
+.copy-num-btn {
+  color: rgba(255, 255, 255, 0.6);
+  padding: 4px;
+}
+
+.copy-num-btn:hover {
+  color: #ffffff;
+}
+
+.card-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.card-field-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.6);
+  display: block;
+}
+
+.card-holder-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.card-expiry-date {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Back of Card */
+.card-back {
+  transform: rotateY(180deg);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mag-stripe {
+  width: 100%;
+  height: 44px;
+  background: #020617;
+  margin-top: 24px;
+}
+
+.signature-cvv-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px 0 24px;
+}
+
+.signature-strip {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.85);
+  color: #0f172a;
+  font-family: 'Brush Script MT', cursive, sans-serif;
+  font-size: 0.95rem;
+  padding: 6px 12px;
+  border-radius: 4px;
+  text-align: right;
+}
+
+.cvv-box {
+  background: #ffffff;
+  color: #0f172a;
+  padding: 6px 10px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.cvv-label {
+  font-size: 0.65rem;
+  color: #64748b;
+}
+
+.card-disclaimer {
+  padding: 16px 24px 20px 24px;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.3;
+}
+
+.card-quick-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.card-quick-actions .active-locked {
+  background: rgba(244, 63, 94, 0.2);
+  border-color: rgba(244, 63, 94, 0.4);
+  color: var(--text-rose);
+}

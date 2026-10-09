@@ -1,0 +1,178 @@
+.accounts-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-sub {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  max-width: 650px;
+}
+
+.page-actions-row {
+  display: flex;
+  gap: 10px;
+}
+
+.accounts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 20px;
+}
+
+.account-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.account-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.account-currency-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.currency-flag-lg {
+  font-size: 1.8rem;
+}
+
+.account-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.account-number-sub {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.account-balance-section {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--bg-surface-elevated);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.balance-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.balance-display {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.account-details-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.detail-label {
+  color: var(--text-secondary);
+}
+
+.detail-copyable {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--accent-cyan);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-elevated);
+  transition: all var(--transition-fast);
+}
+
+.detail-copyable:hover {
+  background: var(--bg-hover);
+}
+
+.account-card-actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Add Account CTA Card */
+.add-account-cta-card {
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 2px dashed var(--border-subtle);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  min-height: 320px;
+}
+
+.add-account-cta-card:hover {
+  border-color: var(--accent-emerald);
+  background: var(--bg-hover);
+  transform: translateY(-2px);
+}
+
+.add-cta-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent-emerald-subtle);
+  color: var(--accent-emerald);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.add-account-cta-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+}
+
+.add-account-cta-card p {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  max-width: 260px;
+}
+
+@media (max-width: 768px) {
+  .page-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}

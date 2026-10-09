@@ -57,7 +57,7 @@ async function userRegisterController(req, res) {
 
         setAuthCookie(res, token)
 
-        res.status(201).json({ user: getPublicUser(user) })
+        res.status(201).json({ user: getPublicUser(user), token })
 
         await emailService.sendRegistrationEmail(user.email, user.name)
     } catch (error) {
@@ -105,7 +105,7 @@ async function userLoginController(req, res) {
 
     setAuthCookie(res, token)
 
-    res.status(200).json({ user: getPublicUser(user) })
+    res.status(200).json({ user: getPublicUser(user), token })
 
 }
 

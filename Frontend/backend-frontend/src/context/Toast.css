@@ -1,0 +1,96 @@
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 9999;
+  max-width: 420px;
+  width: calc(100% - 48px);
+  pointer-events: none;
+}
+
+.toast-item {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-elevated);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
+  color: var(--text-primary);
+  transition: all var(--transition-normal);
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.toast-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+  color: var(--text-primary);
+}
+
+.toast-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.toast-close {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  padding: 2px;
+  border-radius: 4px;
+}
+
+.toast-close:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+/* Toast Variants */
+.toast-success {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(6, 78, 59, 0.25));
+}
+.toast-success .toast-icon {
+  color: var(--accent-emerald);
+}
+
+.toast-error {
+  border-color: rgba(244, 63, 94, 0.35);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(136, 19, 55, 0.25));
+}
+.toast-error .toast-icon {
+  color: var(--accent-rose);
+}
+
+.toast-warning {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(120, 53, 15, 0.25));
+}
+.toast-warning .toast-icon {
+  color: #fbbf24;
+}
+
+.toast-info {
+  border-color: rgba(6, 182, 212, 0.35);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(22, 78, 99, 0.25));
+}
+.toast-info .toast-icon {
+  color: var(--accent-cyan);
+}

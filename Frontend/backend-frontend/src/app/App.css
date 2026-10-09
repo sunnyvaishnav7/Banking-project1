@@ -1,0 +1,124 @@
+.apex-app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #FFFFFF;
+}
+
+/* Global Switcher Toolbar */
+.global-view-bar {
+  background-color: #FFFFFF;
+  border-bottom: 1px solid var(--border-color);
+  padding: 10px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.view-bar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.view-bar-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background-color: var(--primary-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.view-bar-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-heading);
+  display: block;
+}
+
+.view-bar-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+  display: block;
+}
+
+.view-mode-pill-toggle {
+  display: flex;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 3px;
+  border: 1px solid var(--border-color);
+  gap: 2px;
+}
+
+.view-mode-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+}
+
+.view-mode-btn.active {
+  background-color: #FFFFFF;
+  color: var(--primary-blue);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.desktop-login-wrapper {
+  min-height: calc(100vh - 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F8FAFC;
+  padding: 24px;
+}
+
+/* Native Mobile Container when on phone or small viewport */
+.native-mobile-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: calc(100vh - 54px);
+  background-color: var(--bg-white);
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: var(--bg-white);
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+}
+
+.mobile-main-body {
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--bg-white);
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .global-view-bar {
+    padding: 8px 12px;
+  }
+  .view-bar-sub {
+    display: none;
+  }
+}
